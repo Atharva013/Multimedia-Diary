@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Entry - My Diary</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --background-color: #f8f9fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --muted-text: #6c757d;
+            --divider-color: #e0e0e0;
+            --tag-color: #e3f2fd;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .back-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .back-link::before {
+            content: "←";
+            margin-right: 5px;
+        }
+        
+        .entry-card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .entry-title {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.8em;
+        }
+        
+        .entry-text {
+            margin-bottom: 25px;
+            white-space: pre-line;
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+        
+        .entry-meta {
+            font-size: 0.9em;
+            color: var(--muted-text);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--divider-color);
+            padding-bottom: 15px;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 20px 0;
+        }
+        
+        .tag {
+            background-color: var(--tag-color);
+            color: var(--secondary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .media-section {
+            margin-top: 30px;
+        }
+        
+        .media-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .media-item {
+            border: 1px solid var(--divider-color);
+            border-radius: 6px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        
+        .media-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .media-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .media-preview {
+            height: 120px;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        
+        .media-info {
+            padding: 10px;
+            font-size: 0.9em;
+        }
+        
+        .media-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .media-size {
+            color: var(--muted-text);
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ entry.title }}</h1>
+        <a href="/" class="back-link">Back to Diary</a>
+    </div>
+    
+    <div class="entry-card">
+        <div class="entry-meta">
+            <span><strong>Created:</strong> {{ entry.date }}</span>
+            {% if entry.modified_date %}
+            <span><strong>Modified:</strong> {{ entry.modified_date }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="entry-text">{{ entry.text_entry }}</div>
+        
+        {% if entry.tags %}
+        <div class="tags">
+            {% if entry.tags is string %}
+                {% for tag in entry.tags.split(',') %}
+                    <span class="tag">{{ tag.strip() }}</span>
+                {% endfor %}
+            {% else %}
+                {% for tag in entry.tags %}
+                    <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if entry.media_ids %}
+        <div class="media-section">
+            <h3 class="media-title">Attachments</h3>
+            <div class="media-grid">
+                {% for media_id in entry.media_ids %}
+                <div class="media-item">
+                    <a href="/media/{{ media_id }}" class="media-link" target="_blank">
+                        <div class="media-preview">
+                            {% if media_id.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'gif'] %}
+                            📷
+                            {% elif media_id.split('.')[-1].lower() in ['mp4', 'mov', 'avi'] %}
+                            🎥
+                            {% elif media_id.split('.')[-1].lower() in ['mp3', 'wav', 'ogg'] %}
+                            🎵
+                            {% elif media_id.split('.')[-1].lower() in ['pdf'] %}
+                            📄
+                            {% else %}
+                            📁
+                            {% endif %}
+                        </div>
+                        <div class="media-info">
+                            <div class="media-name">{{ media_id }}</div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
