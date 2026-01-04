@@ -4,6 +4,7 @@ A personal multimedia journaling application that lets users create daily diary 
 
 This repository contains the full backend (Flask) and frontend (HTML templates & static assets) required to run the diary locally.
 
+
 ---
 
 ## Features
