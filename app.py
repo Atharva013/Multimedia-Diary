@@ -14,9 +14,12 @@ CORS(app)
 # MongoDB Atlas connection
 # (TEMPORARILY hardcoded — secure later)
 # ---------------------------------
-client = MongoClient(
-    "mongodb+srv://Atharva13:Atharva13@multimediadiary.k9ikezm.mongodb.net/multimedia_diary"
-)
+MONGO_URI = os.environ.get("MONGO_URI")
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI not set")
+
+client = MongoClient(MONGO_URI)
+
 
 db = client["multimedia_diary"]
 fs = gridfs.GridFS(db)
