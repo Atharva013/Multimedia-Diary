@@ -1,6 +1,4 @@
 Flask
 pymongo
 dnspython
-gridfs
 flask-cors
-python-dotenv
