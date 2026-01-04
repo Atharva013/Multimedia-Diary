@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "templates/**"
-      - ".github/workflows/deploy-frontend.yml"
-
 
 permissions:
   contents: read
@@ -19,30 +15,56 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
+    environment:
+      name: github-pages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # Detect frontend changes (templates only)
+      # ----------------------------------------
+      - name: Check for frontend changes
+        id: changes
+        run: |
+          git fetch origin main
+          if git diff --name-only origin/main...HEAD | grep -q "^templates/"; then
+            echo "frontend_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      # ----------------------------------------
+      # Stop workflow if no frontend changes
+      # ----------------------------------------
+      - name: Skip deploy (no frontend changes)
+        if: steps.changes.outputs.frontend_changed == 'false'
+        run: |
+          echo "No frontend changes detected. Skipping GitHub Pages deployment."
+          exit 0
+
+      # ----------------------------------------
+      # Prepare static site
+      # ----------------------------------------
       - name: Prepare static site
         run: |
           mkdir site
           cp -r templates/* site/
 
-      - name: Upload artifact
+      # ----------------------------------------
+      # Upload Pages artifact
+      # ----------------------------------------
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
+      # ----------------------------------------
+      # Deploy to GitHub Pages
+      # ----------------------------------------
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
